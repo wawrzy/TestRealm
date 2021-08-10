@@ -42,6 +42,12 @@ function sqlite3SampleCode( resultsCallback ) {
   db.close();
 }
 
+function realmSampleCode( resultsCallback ) {
+    var realm = require('realm');
+
+    resultsCallback('Lol');
+}
+
 rn_bridge.channel.on('message', (msg) => {
   try {
     switch(msg) {
@@ -65,7 +71,15 @@ rn_bridge.channel.on('message', (msg) => {
             )
         );
         break;
-      default:
+    case 'realm':
+        realmSampleCode( (result) =>
+            rn_bridge.channel.send(
+                "realm output:\n" +
+                result
+            )
+        );
+        break;
+    default:
         rn_bridge.channel.send(
           "unknown request:\n" +
           msg
