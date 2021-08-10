@@ -6,6 +6,7 @@
     "author": "janeasystems",
     "license": "",
     "dependencies": {
+        "cmake-js": "^6.2.1",
         "realm": "^10.6.1",
         "sha3": "^2.1.4",
         "sqlite3": "^5.0.2"
