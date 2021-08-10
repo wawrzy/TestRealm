@@ -54,6 +54,9 @@ export default class App extends React.Component {
         <Button title="Run sqlite3"
           onPress={() => nodejs.channel.send('sqlite3')}
         />
+        <Button title="Run realm"
+          onPress={() => nodejs.channel.send('realm')}
+        />
         <Text style={styles.instructions}>
           {this.state.lastNodeMessage}
         </Text>
