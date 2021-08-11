@@ -43,16 +43,18 @@ export default class RealmComp extends React.Component {
     return schemas;
   }
 
-  async setUp() {
-    this.realm = await Realm.open({
+  setUp() {
+    Realm.open({
       path: "myrealm",
       schema: this.getSchemas(),
+    }).then((realm) => {
+      this.realm = realm;
+
+      this.setState({ step: 'initialized' });
+
+      this.props.nodejs.channel.addListener("realm-find", this.onFind, this);
+      this.props.nodejs.channel.addListener("realm-create", this.onCreate, this);
     });
-
-    this.setState({ step: 'initialized' });
-
-    this.props.nodejs.channel.addListener("realm-find", this.onFind, this);
-    this.props.nodejs.channel.addListener("realm-create", this.onCreate, this);
   }
 
   schemaFromName(name) {
