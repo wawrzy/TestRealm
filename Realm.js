@@ -1,5 +1,8 @@
  import React from 'react';
- import nodejs from 'nodejs-mobile-react-native';
+ import {
+    View,
+    Text,
+  } from 'react-native';
 
  class Car {
     static schema = {
@@ -19,19 +22,20 @@
 export default class Realm extends React.Component {
    constructor(props){
      super(props);
-     this.realm = null
+     this.realm = null;
+     this.state = { step: 'init' };
    }
  
    componentWillMount() {
-    async function init() {
-        await this.setUp();
+        alert('WILL - SETUP');
+        this.setUp();
+        alert('HAS - SETUP');
         this.props.nodejs.channel.addListener(
             "realm",
             this.onCommand,
             this 
         );
-    }
-    init();
+        alert('SETUP');
    }
  
    componentWillUnmount() {
@@ -40,10 +44,13 @@ export default class Realm extends React.Component {
      }
    }
 
-   async setUp() {
-    this.realm = await Realm.open({
+   setUp() {
+    Realm.open({
         path: "myrealm",
         schema: [Car],
+    }).then((realm) => {
+        this.realm = realm;
+        this.setState({step: 'REALM'});
     });
    }
 
@@ -54,6 +61,6 @@ export default class Realm extends React.Component {
    }
  
    render() {
-       return null;
+       return <View><Text>{this.state.step}</Text></View>;
    }
  }
