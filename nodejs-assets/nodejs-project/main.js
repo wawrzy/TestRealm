@@ -1,94 +1,97 @@
 var rn_bridge = require('rn-bridge');
 
-// sha3 module sample code adapted from its README.
-function sha3SampleCode() {
-  var SHA3 = require('sha3');
-  var result = '';
-  // Generate 512-bit digest.
-  var d = new SHA3.SHA3Hash();
-  d.update('foo');
-  result += "Digest 1: " + d.digest('hex') + "\n";   // => "1597842a..."
-  // Generate 224-bit digest.
-  d = new SHA3.SHA3Hash(224);
-  d.update('foo');
-  result += "Digest 2: " + d.digest('hex') +"\n";   // => "daa94da7..."
-  return result;
-}
+const OPERATIONS = {};
 
-// sqlite3 module sample code adapted from its README.
-function sqlite3SampleCode( resultsCallback ) {
-  var sqlite3 = require('sqlite3').verbose();
-  var db = new sqlite3.Database(':memory:');
+const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds)
+const randomString = () => Math.random().toString()
 
-  db.serialize(function() {
-    db.run("CREATE TABLE lorem (info TEXT)");
-
-    var stmt = db.prepare("INSERT INTO lorem VALUES (?)");
-    for (var i = 0; i < 10; i++) {
-        stmt.run("Ipsum " + i);
+const waitOperation = (id) => {
+  while (true) {
+    if (OPERATIONS[id] === 'loading') {
+      sleep(50);
+    } else {
+      const res = OPERATIONS[id];
+      OPERATIONS[id] = null;
+      return res;
     }
-    stmt.finalize();
-
-    db.all("SELECT rowid AS id, info FROM lorem", function(err, rows) {
-      var result = '';
-      rows.forEach((row) =>
-        result += row.id + ": " + row.info + "\n"
-      );
-      resultsCallback(result);
-    });
-
-  });
-
-  db.close();
+  }
 }
 
-function realmSampleCode( resultsCallback ) {
-  const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds)
-  sleep(5000);
-  resultsCallback('OK');
+const create = (name, data) => {
+  const id = randomString();
+  OPERATIONS[id] = 'loading';
+
+  rn_bridge.channel.post(
+    'realm-create',
+    {
+      id,
+      name,
+      data,
+    }
+  );
+
+  return waitOperation(id);
+}
+
+const find = (name, query, args) => {
+  const id = randomString();
+  OPERATIONS[id] = 'loading';
+
+  rn_bridge.channel.post(
+    'realm-find',
+    {
+      id,
+      name,
+      query,
+      args,
+    }
+  );
+
+  return waitOperation(id);
+}
+
+function realmSampleCode(resultsCallback) {
+  const users = find('User', '');
+
+  if (users && users.length > 0) {
+    resultsCallback('FOUND IT : ' + JSON.stringify(users));
+  } else {
+    create('User', { email: 'Julien' });
+    resultsCallback('CREATED : ' + JSON.stringify(find('User', '')));
+  }
 }
 
 rn_bridge.channel.on('message', (msg) => {
   try {
-    switch(msg) {
+    switch (msg) {
       case 'versions':
         rn_bridge.channel.send(
           "Versions: " +
           JSON.stringify(process.versions)
         );
         break;
-      case 'sha3':
-        rn_bridge.channel.send(
-          "sha3 output:\n" +
-          sha3SampleCode()
-        );
-        break;
-      case 'sqlite3':
-        sqlite3SampleCode( (result) =>
+      case 'realm':
+        realmSampleCode((result) =>
           rn_bridge.channel.send(
-              "sqlite3 output:\n" +
-              result
-            )
+            result
+          )
         );
         break;
-    case 'realm':
-        realmSampleCode( (result) =>
-            rn_bridge.channel.post(
-                'realm',
-                result
-            )
-        );
-        break;
-    default:
+      default:
         rn_bridge.channel.send(
           "unknown request:\n" +
           msg
         );
         break;
     }
-  } catch (err)
-  {
-    rn_bridge.channel.send("Error: " + JSON.stringify(err) + " => " + err.stack );
+  } catch (err) {
+    rn_bridge.channel.send("Error: " + JSON.stringify(err) + " => " + err.stack);
+  }
+});
+
+rn_bridge.channel.on('realm-response', (data) => {
+  if (data.id) {
+    OPERATIONS[data.id] = data.data;
   }
 });
 
