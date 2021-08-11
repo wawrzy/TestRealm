@@ -90,6 +90,8 @@ rn_bridge.channel.on('message', (msg) => {
 });
 
 rn_bridge.channel.on('realm-response', (data) => {
+  rn_bridge.channel.send("ddddd: " + JSON.stringify(data || {}));
+
   if (data.id) {
     OPERATIONS[data.id] = data.data;
   }

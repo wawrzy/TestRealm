@@ -64,7 +64,7 @@ export default class RealmComp extends React.Component {
   // COMMANDS
 
   onCreate(postData) {
-    alert(postData);
+    alert(JSON.stringify(postData));
     const POST_DATA_ID = postData.id;
     const SCHEMA_NAME = postData.name;
     const schemaObj = postData.data;
@@ -99,18 +99,22 @@ export default class RealmComp extends React.Component {
       populatedSchemaObj.created = populatedSchemaObj.created || new Date();
     }
 
-    this.realm.write(() => {
-      createObj = this.realm.create(this.name, {
-        ...populatedSchemaObj,
-        _id: new ObjectID(populatedSchemaObj._id),
+    try {
+      this.realm.write(() => {
+        createObj = this.realm.create(this.name, {
+          ...populatedSchemaObj,
+          _id: new ObjectID(populatedSchemaObj._id),
+        });
       });
-    });
+    } catch (err) {
+      alert(err);
+    }
 
     this.props.nodejs.channel.post("realm-response", { id: POST_DATA_ID, data: createObj.toJSON() });
   }
 
   onFind(postData) {
-    alert(postData);
+    alert(JSON.stringify(postData));
     const POST_DATA_ID = postData.id;
     const SCHEMA_NAME = postData.name;
     const QUERY = postData.query;
