@@ -122,6 +122,8 @@ export default class RealmComp extends React.Component {
 
     const objInst = this.realm.objects(SCHEMA_NAME);
 
+    alert(JSON.stringify(objInst));
+
     if (QUERY === '') {
       this.props.nodejs.channel.post("realm-response", { id: POST_DATA_ID, data: objInst });
       return;
