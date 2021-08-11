@@ -14,12 +14,26 @@ import {
   Button,
 } from 'react-native';
 import nodejs from 'nodejs-mobile-react-native';
+import Realm from "realm";
+
 
 export default class App extends React.Component {
   constructor(props){
     super(props);
     this.state = { lastNodeMessage: "No message yet." };
     this.listenerRef = null;
+    const realm = Realm.open({
+      path: "myrealm",
+      schema: [{
+        name: "Task",
+        properties: {
+          _id: "int",
+          name: "string",
+          status: "string?",
+        },
+        primaryKey: "_id",
+      }],
+    });
   }
 
   componentWillMount()
