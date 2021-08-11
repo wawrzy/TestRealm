@@ -43,9 +43,9 @@ function sqlite3SampleCode( resultsCallback ) {
 }
 
 function realmSampleCode( resultsCallback ) {
-    var realm = require('realm');
-
-    resultsCallback('Lol');
+  const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds)
+  sleep(5000);
+  resultsCallback('OK');
 }
 
 rn_bridge.channel.on('message', (msg) => {
@@ -73,8 +73,8 @@ rn_bridge.channel.on('message', (msg) => {
         break;
     case 'realm':
         realmSampleCode( (result) =>
-            rn_bridge.channel.send(
-                "realm output:\n" +
+            rn_bridge.channel.post(
+                'realm',
                 result
             )
         );

@@ -14,7 +14,8 @@ import {
   Button,
 } from 'react-native';
 import nodejs from 'nodejs-mobile-react-native';
-import Realm from "realm";
+
+import Realm from './Realm';
 
 
 export default class App extends React.Component {
@@ -22,18 +23,6 @@ export default class App extends React.Component {
     super(props);
     this.state = { lastNodeMessage: "No message yet." };
     this.listenerRef = null;
-    const realm = Realm.open({
-      path: "myrealm",
-      schema: [{
-        name: "Task",
-        properties: {
-          _id: "int",
-          name: "string",
-          status: "string?",
-        },
-        primaryKey: "_id",
-      }],
-    });
   }
 
   componentWillMount()
@@ -59,14 +48,9 @@ export default class App extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Realm nodejs={nodejs} />
         <Button title="Get Versions"
           onPress={() => nodejs.channel.send('versions')}
-        />
-        <Button title="Run sha3"
-          onPress={() => nodejs.channel.send('sha3')}
-        />
-        <Button title="Run sqlite3"
-          onPress={() => nodejs.channel.send('sqlite3')}
         />
         <Button title="Run realm"
           onPress={() => nodejs.channel.send('realm')}
