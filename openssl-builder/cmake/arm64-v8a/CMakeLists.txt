@@ -188,26 +188,6 @@ endif()
 
 # Find dependencies
 
-include_directories(libnode/include/node/)
-
-add_library( libnode
-             SHARED
-             IMPORTED )
-
-set_target_properties( # Specifies the target library.
-    libnode
-
-    # Specifies the parameter you want to define.
-    PROPERTIES IMPORTED_LOCATION
-
-    # Provides the path to the library you want to import.
-    ${CMAKE_SOURCE_DIR}/libnode/bin/arm64-v8a/libnode.so
-)
-
-target_link_libraries( # Specifies the target library.
-    libnode
-)
-
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 find_package(BISON 3.7.4)
