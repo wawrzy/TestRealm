@@ -64,6 +64,7 @@ export default class RealmComp extends React.Component {
   // COMMANDS
 
   onCreate(postData) {
+    alert(postData);
     const POST_DATA_ID = postData.id;
     const SCHEMA_NAME = postData.name;
     const schemaObj = postData.data;
@@ -109,6 +110,7 @@ export default class RealmComp extends React.Component {
   }
 
   onFind(postData) {
+    alert(postData);
     const POST_DATA_ID = postData.id;
     const SCHEMA_NAME = postData.name;
     const QUERY = postData.query;
