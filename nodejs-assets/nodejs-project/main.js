@@ -5,59 +5,65 @@ const OPERATIONS = {};
 const sleep = milliseconds => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds)
 const randomString = () => Math.random().toString()
 
-const waitOperation = (id) => {
-  while (true) {
+const waitOperation = (id, resolve) => {
+  function check() {
     if (OPERATIONS[id] === 'loading') {
-      sleep(50);
+      setTimeout(() => check(), 50)
     } else {
       const res = OPERATIONS[id];
       OPERATIONS[id] = null;
-      return res;
+      resolve(res);
     }
   }
+
+  check();
 }
 
 const create = (name, data) => {
-  const id = randomString();
-  OPERATIONS[id] = 'loading';
+  return new Promise((resolve) => {
+    const id = randomString();
+    OPERATIONS[id] = 'loading';
 
-  rn_bridge.channel.post(
-    'realm-create',
-    {
-      id,
-      name,
-      data,
-    }
-  );
+    rn_bridge.channel.post(
+      'realm-create',
+      {
+        id,
+        name,
+        data,
+      }
+    );
 
-  return waitOperation(id);
+    waitOperation(id, resolve);
+  });
 }
 
 const find = (name, query, args) => {
-  const id = randomString();
-  OPERATIONS[id] = 'loading';
+  return new Promise((resolve) => {
+    const id = randomString();
+    OPERATIONS[id] = 'loading';
 
-  rn_bridge.channel.post(
-    'realm-find',
-    {
-      id,
-      name,
-      query,
-      args,
-    }
-  );
+    rn_bridge.channel.post(
+      'realm-find',
+      {
+        id,
+        name,
+        query,
+        args,
+      }
+    );
 
-  return waitOperation(id);
+    waitOperation(id, resolve);
+  })
 }
 
-function realmSampleCode(resultsCallback) {
-  const users = find('User', '');
+async function realmSampleCode(resultsCallback) {
+  const users = await find('User', '');
 
   if (users && users.length > 0) {
     resultsCallback('FOUND IT : ' + JSON.stringify(users));
   } else {
-    create('User', { email: 'Julien' });
-    resultsCallback('CREATED : ' + JSON.stringify(find('User', '')));
+    await create('User', { email: 'Julien' });
+    resultsCallback('CREATED : ' + JSON.stringify(await find('User', '')));
   }
 }
 
@@ -90,7 +96,6 @@ rn_bridge.channel.on('message', (msg) => {
 });
 
 rn_bridge.channel.on('realm-response', (data) => {
-  console.log('HELLO')
   rn_bridge.channel.send("ddddd: " + JSON.stringify(data || {}));
 
   if (data.id) {

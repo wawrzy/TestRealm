@@ -101,7 +101,7 @@ export default class RealmComp extends React.Component {
 
     try {
       this.realm.write(() => {
-        createObj = this.realm.create(this.name, {
+        createObj = this.realm.create(SCHEMA_NAME, {
           ...populatedSchemaObj,
           _id: new ObjectID(populatedSchemaObj._id),
         });
